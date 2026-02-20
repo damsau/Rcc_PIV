@@ -1,0 +1,43 @@
+# Experiment name
+data_name: "default"
+
+# rcc-piv settings
+rcc_piv:
+  # particle image parameters
+  img_name: "default"   # 名前
+  # img_name: "default_turbulence"   # 名前
+  img_ext: ".avi"       # 拡張子
+  pixel_to_mm: 1    # キャリブレーション定数 [mm / pixel]
+
+  # piv parameters
+  start: "None" # 開始点 
+  end: "None"  # 終了点
+  pivstep_skip: 0   # 解析間隔（0:全て） 
+  ref_skip_low: 1   # 低速域での参照間隔（0:隣と比較）
+  ref_skip_high: 0  # 高速域での参照間隔（0:隣と比較）
+  rcc_num: 4    # 再帰処理回数
+  iw_size: [80, 60, 40, 20]     # 検査領域サイズ [pixel]
+  sw_size: [120, 90, 60, 30]    # 検査領域サイズ [pixel]
+  margin_size: [30, 30, 30, 30] # 余白領域サイズ [pixel]
+  overlap_ratio: [0.5, 0.5, 0.5, 0.5]  # 検査領域のオーバーラップ率
+
+
+file_io: 
+  workdir_path: "/home/masuda/01_github/10_Rcc_PIV"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
