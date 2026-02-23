@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import torch
 
 
 # カラーマップの定義
@@ -50,7 +52,7 @@ def show_3d_img_from_tensor(tensor, title="None"):
     X, Y = np.meshgrid(x, y)
 
     # プロットの作成
-    fig = plt.figure(figsize=(10, 7))
+    fig = plt.figure(figsize=(10, 7), dpi=100)
     ax = fig.add_subplot(111, projection="3d")
 
     # 面の描画
@@ -68,3 +70,64 @@ def show_3d_img_from_tensor(tensor, title="None"):
     ax.view_init(elev=30, azim=45)
 
     plt.show()
+
+
+def plot_vector(x_mesh, y_mesh, vector, output_filepath=None):
+
+    # 引数をnumpy配列に変換
+    x_mesh = x_mesh.detach().cpu().numpy()
+    y_mesh = y_mesh.detach().cpu().numpy()
+    vector = vector.detach().cpu().numpy()
+
+    plt.style.use("PIV_results")
+
+    fig, ax = plt.subplots(1, 1)
+
+    # 軸ラベル
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
+
+    # 描画範囲
+    ax.set_xlim(np.min(x_mesh) - 50, np.max(x_mesh) + 50)
+    ax.set_ylim(np.min(y_mesh) - 50, np.max(y_mesh) + 50)
+
+    # 間引き間隔
+    s = slice(None, None, 1)
+
+    # vectorの規格化
+    vector_abs = np.sqrt(vector[:, :, 0] ** 2 + vector[:, :, 1] ** 2)
+    vector_abs[vector_abs == 0] = 1.0
+    vector_x = vector[:, :, 1] / vector_abs
+    vector_y = vector[:, :, 0] / vector_abs
+
+    # 描画
+    q = ax.quiver(
+        x_mesh[s, s],
+        y_mesh[s, s],
+        vector_x[s, s],
+        vector_y[s, s],
+        vector_abs[s, s],
+        angles="xy",
+        scale_units="xy",
+        scale=0.075,
+        pivot="mid",
+        cmap=CMAP_THERMAL,
+    )
+
+    # アスペクト比を同じに
+    ax.set_aspect("equal")
+
+    # カラーバーの設定
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1)
+
+    cbar = fig.colorbar(q, cax=cax, extend="max")
+    cbar.set_label("Magnitude")
+
+    fig.tight_layout()
+    # fig.subplots_adjust()
+
+    if output_filepath is None:
+        plt.show()
+    else:
+        fig.savefig(fname=output_filepath, bbox_inches="tight")

@@ -13,6 +13,8 @@ class ParticleImageDataset(Dataset):
         """
         super().__init__()
 
+        print("\n粒子画像データを読み込みます...")
+
         # 動画ファイルを取得
         self.import_path = osp.join(root, filename)
         cap = cv2.VideoCapture(self.import_path)
@@ -33,6 +35,10 @@ class ParticleImageDataset(Dataset):
         if self.ref_skip_low < self.ref_skip_high:
             print("解析間隔の設定が間違っています．")
             exit()
+        self.dt = {
+            "high": (1 / self.frm_rate) * (ref_skip_high + 1),
+            "low": (1 / self.frm_rate) * (ref_skip_high + 1),
+        }
 
         # 0始まりのインデックス
         self.start = ref_skip_low + 1
@@ -74,7 +80,5 @@ class ParticleImageDataset(Dataset):
             idx + 1 + skip_high,
             idx + 1 + skip_low,
         ]
-
-        print(f"idx = {get_idx}")
 
         return self.img_tensor[get_idx]

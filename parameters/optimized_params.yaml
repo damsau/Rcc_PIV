@@ -1,0 +1,39 @@
+data_name: default
+rcc_piv:
+  img_name: uniform_shear
+  img_ext: .avi
+  pixel_to_mm: 0.0245901639344
+  start: None
+  end: None
+  pivstep_skip: 0
+  ref_skip_low: 0
+  ref_skip_high: 0
+  rcc_num: 3
+  iw_size:
+  - 56
+  - 40
+  - 16
+  - 0
+  sw_size:
+  - 116
+  - 80
+  - 20
+  - 0
+  margin_size:
+  - 63
+  - 45
+  - 18
+  - 50
+  overlap_ratio:
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  mask_threshold: 2
+  error_threshold:
+  - 1
+  - 2
+  - 2
+  - 2
+file_io:
+  workdir_path: /home/masuda/01_github/10_Rcc_PIV
