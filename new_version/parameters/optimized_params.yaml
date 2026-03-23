@@ -1,0 +1,46 @@
+data_name: default
+rcc_piv:
+  # img_name: water_turbulence_1rps_300fps_100_us1
+  img_name: "uniform_shear"   # 名前
+  img_ext: .avi
+  pixel_to_mm: 0.0245901639344
+  # pixel_to_mm: 1
+  start: None
+  end: None
+  pivstep_skip: 10
+  ref_skip_low: 3
+  ref_skip_high: 1
+  rcc_num: 1
+  iw_size:
+  - 80
+  - 0
+  - 0
+  - 0
+  - 0
+  sw_size:
+  - 240
+  - 0
+  - 0
+  - 0
+  - 0
+  margin_size:
+  - 50
+  - 50
+  - 50
+  - 50
+  - 50
+  overlap_ratio:
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  mask_threshold: 0
+  error_threshold:
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+file_io:
+  workdir_path: /home/masuda/01_github/10_Rcc_PIV

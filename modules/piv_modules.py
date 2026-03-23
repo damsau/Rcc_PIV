@@ -185,7 +185,7 @@ class RecursivCorrelationPIV:
 
         return displacement
 
-    def get_mask_flag(self, displacement, threshold=3.0):
+    def get_mask_flag(self, displacement, threshold=1.0):
 
         # 引数をキャスト
         disp_high = displacement[0, ...]
@@ -282,7 +282,7 @@ class RecursivCorrelationPIV:
             ).permute(0, 2, 3, 1)
             # 低速域用
             disp_interpolated_low = F.grid_sample(
-                disp[0:1, ...],
+                disp[1:2, ...],
                 grid,
                 mode="bilinear",
                 padding_mode="border",
@@ -386,9 +386,9 @@ class RecursivCorrelationPIV:
         corrected_vel_vals = weighted_sum / (weight_sum + 1e-8)
 
         # 周囲8点がすべて誤ベクトルだった場合は，3x3中央値で代用
-        corrected_vel_vals = torch.where(
-            weight_sum > 0, corrected_vel_vals, filtered_vec.squeeze(2)
-        )
+        # corrected_vel_vals = torch.where(
+        #     weight_sum > 0, corrected_vel_vals, filtered_vec.squeeze(2)
+        # )
 
         # flag_errorがTrueの点だけ，置き換える
         corrected_vel_vals = corrected_vel_vals.squeeze(0).permute(1, 2, 0)

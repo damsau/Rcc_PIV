@@ -109,9 +109,10 @@ def plot_vector(x_mesh, y_mesh, vector, output_filepath=None):
         vector_abs[s, s],
         angles="xy",
         scale_units="xy",
-        scale=0.075,
+        scale=0.02,
         pivot="mid",
         cmap=CMAP_THERMAL,
+        clim=(0, 50),
     )
 
     # アスペクト比を同じに
@@ -131,3 +132,4 @@ def plot_vector(x_mesh, y_mesh, vector, output_filepath=None):
         plt.show()
     else:
         fig.savefig(fname=output_filepath, bbox_inches="tight")
+        plt.close(fig)

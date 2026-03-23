@@ -37,7 +37,7 @@ class ParticleImageDataset(Dataset):
             exit()
         self.dt = {
             "high": (1 / self.frm_rate) * (ref_skip_high + 1),
-            "low": (1 / self.frm_rate) * (ref_skip_high + 1),
+            "low": (1 / self.frm_rate) * (ref_skip_low + 1),
         }
 
         # 0始まりのインデックス
@@ -46,23 +46,7 @@ class ParticleImageDataset(Dataset):
         self.pivstep_skip = pivstep_skip
         self.pivstep_num = int((self.end - self.start + 1) / (self.pivstep_skip + 1))
 
-        # 全フレームを一括読み込み
-        img_list = []
-        while True:
-            _ret, _frame = cap.read()
-            if not _ret:
-                break
-
-            _frame = cv2.cvtColor(_frame, cv2.COLOR_BGR2GRAY)  # グレースケールに変換
-            img_list.append(_frame)
-
         cap.release()
-
-        self.img_tensor = torch.from_numpy(np.array(img_list)).float()  # Tensorに変換
-        self.img_tensor = self.img_tensor.unsqueeze(
-            1
-        )  # 次元変換 (B, H, W) -> (B, C=1, H, W)
-        del img_list
 
     def __len__(self):
         return self.pivstep_num
@@ -81,4 +65,26 @@ class ParticleImageDataset(Dataset):
             idx + 1 + skip_low,
         ]
 
-        return self.img_tensor[get_idx]
+        cap = cv2.VideoCapture(self.import_path)
+
+        frames = []
+        for i in get_idx:
+            # 指定したフレーム番号へシーク（ジャンプ）
+            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+            ret, frame = cap.read()
+
+            if not ret:
+                # 万が一読み込めなかった場合の安全対策（真っ黒の画像を返すなど）
+                print("画像が読み込めてません")
+                frame = np.zeros((self.img_height, self.img_width), dtype=np.uint8)
+            else:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            frames.append(frame)
+
+        cap.release()
+
+        # numpy配列をPyTorchテンソルに変換: (5, H, W) -> (5, 1, H, W)
+        img_tensor = torch.from_numpy(np.array(frames)).float().unsqueeze(1)
+
+        return img_tensor

@@ -1,0 +1,44 @@
+data_name: default
+rcc_piv:
+  img_name: water_turbulence_1rps_300fps_100_us1
+  img_ext: .avi
+  pixel_to_mm: 0.0245901639344
+  start: None
+  end: None
+  pivstep_skip: 0
+  ref_skip_low: 5
+  ref_skip_high: 1
+  rcc_num: 5
+  iw_size:
+  - 80
+  - 72
+  - 64
+  - 40
+  - 24
+  sw_size:
+  - 96
+  - 86
+  - 76
+  - 52
+  - 28
+  margin_size:
+  - 53
+  - 48
+  - 43
+  - 31
+  - 19
+  overlap_ratio:
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  mask_threshold: 1.0
+  error_threshold:
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+file_io:
+  workdir_path: /home/masuda/01_github/10_Rcc_PIV

@@ -60,17 +60,20 @@ def rcc_piv(params, mode="analysis"):
 
     # piv解析のループ
     print("\nPIV解析を開始します...")
-    list_sn_ratio = []
-    list_error_ratio = []
-    for piv_step in range(start, end + 1, skip + 1):
-        print(f"\n--- piv_step: {piv_step + 1} / {end + 1} ---")
+    list_sn_ratio = []  # SN比
+    list_error_ratio = []  # 誤ベクトル率
+    list_dynamic_range = []  # ダイナミックレンジ
+    list_spatial_variations = []  # 速度場の滑らかさ
+    for piv_step in range(start, end + 1, skip + 1) if mode == "analysis" else range(5):
 
         # 解析するペア画像を取得
         if mode == "analysis":
+            print(f"\n--- piv_step: {piv_step + 1} / {end + 1} ---")
             imgs = ParticleImages[piv_step].to(device)
         else:
             rng = np.random.default_rng()  # 乱数ジェネレータ
             piv_step = rng.integers(start, end + 1)
+            print(f"\n--- piv_step: {piv_step + 1} / {end + 1} ---")
             imgs = ParticleImages[piv_step].to(device)
 
         # 変数の初期化
@@ -186,8 +189,46 @@ def rcc_piv(params, mode="analysis"):
                 ),
             )
 
+        if mode == "optimize":
+            # 速度のダイナミックレンジを評価
+            vel_x = corrected_velocity[0]
+            vel_y = corrected_velocity[1]
+            mag = torch.sqrt(vel_x**2 + vel_y**2)
+            max_vel = torch.quantile(mag, 0.9)  # 外れ値を避けるため95パーセンタイル
+            min_vel = torch.quantile(mag, 0.1)  # ノイズフロア
+
+            # 速度のダイナミックレンジの近似
+            dynamic_range_score = (max_vel / (min_vel + 1e-6)).item()
+            list_dynamic_range.append(dynamic_range_score)
+
+            # 隣接画素との差分（x方向とy方向）
+            diff_u_x = torch.diff(vel_x, dim=1)
+            diff_u_y = torch.diff(vel_x, dim=0)
+            diff_v_x = torch.diff(vel_y, dim=1)
+            diff_v_y = torch.diff(vel_y, dim=0)
+
+            # 空間的な変動（滑らかさ）の指標：小さいほど良い
+            spatial_fluctuation = (
+                (
+                    diff_u_x.pow(2).mean()
+                    + diff_u_y.pow(2).mean()
+                    + diff_v_x.pow(2).mean()
+                    + diff_v_y.pow(2).mean()
+                )
+                .sqrt()
+                .item()
+            )
+
+            list_spatial_variations.append(spatial_fluctuation)
+
     if mode == "optimize":
-        return np.array(list_error_ratio), np.array(list_sn_ratio)
+
+        return (
+            np.array(list_error_ratio),
+            np.array(list_sn_ratio),
+            np.array(list_dynamic_range),
+            np.array(list_spatial_variations),
+        )
 
 
 if __name__ == "__main__":
