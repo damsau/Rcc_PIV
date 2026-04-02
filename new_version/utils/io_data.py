@@ -7,7 +7,7 @@ import os.path as osp
 
 
 class ParticleImageDataset(Dataset):
-    def __init__(self, root, filename, pivstep_skip, ref_skip_low, ref_skip_high):
+    def __init__(self, root, filename, pivstep_skip, buffer_num):
         """
         root: 粒子画像のデータディレクトリ（例: /images）
         """
@@ -29,9 +29,8 @@ class ParticleImageDataset(Dataset):
         self.frm_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # パラメータ設定
-        self.ref_skip_low = ref_skip_low
-        self.ref_skip_high = ref_skip_high
         self.pivstep_skip = pivstep_skip
+        self.buffer_num = buffer_num
         if self.ref_skip_low < self.ref_skip_high:
             print("解析間隔の設定が間違っています．")
             exit()
