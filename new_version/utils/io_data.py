@@ -2,88 +2,67 @@
 import numpy as np
 import cv2
 import torch
-from torch.utils.data import Dataset
 import os.path as osp
 
 
-class ParticleImageDataset(Dataset):
-    def __init__(self, root, filename, pivstep_skip, buffer_num):
+class ParticleImageDataset:
+    def __init__(self, root, filename, n_buffer=2):
         """
         root: 粒子画像のデータディレクトリ（例: /images）
+        filename: 粒子画像動画のファイル名
+        buffer_num: 保持する粒子画像の枚数
         """
         super().__init__()
 
-        print("\n粒子画像データを読み込みます...")
-
         # 動画ファイルを取得
-        self.import_path = osp.join(root, filename)
-        cap = cv2.VideoCapture(self.import_path)
+        self.IMPORT_PATH = osp.join(root, filename)
+        cap = cv2.VideoCapture(self.IMPORT_PATH)
         if not cap.isOpened():
             print("動画ファイルが開けませんでした．")
             exit()
 
         # 動画情報を取得
-        self.img_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.img_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.frm_rate = cap.get(cv2.CAP_PROP_FPS)
-        self.frm_num = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.WIDTH = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.FRAMERATE = cap.get(cv2.CAP_PROP_FPS)
+        self.N_FRAME = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # パラメータ設定
-        self.pivstep_skip = pivstep_skip
-        self.buffer_num = buffer_num
-        if self.ref_skip_low < self.ref_skip_high:
-            print("解析間隔の設定が間違っています．")
-            exit()
-        self.dt = {
-            "high": (1 / self.frm_rate) * (ref_skip_high + 1),
-            "low": (1 / self.frm_rate) * (ref_skip_low + 1),
-        }
-
-        # 0始まりのインデックス
-        self.start = ref_skip_low + 1
-        self.end = self.frm_num - (ref_skip_low + 1) - 1
-        self.pivstep_skip = pivstep_skip
-        self.pivstep_num = int((self.end - self.start + 1) / (self.pivstep_skip + 1))
+        self.N_BUFFER = n_buffer
 
         cap.release()
 
-    def __len__(self):
-        return self.pivstep_num
+    def get_images(self, i_frame=0):
+        if i_frame < 0 or i_frame > self.N_FRAME:
+            print("!!! 解析範囲外のフレームです !!!")
+            exit
 
-    def __getitem__(self, idx, skip_low=None, skip_high=None):
-        if skip_low == None:
-            skip_low = self.ref_skip_low
-        if skip_high == None:
-            skip_high = self.ref_skip_high
-
-        get_idx = [
-            idx - 1 - skip_low,
-            idx - 1 - skip_high,
-            idx,
-            idx + 1 + skip_high,
-            idx + 1 + skip_low,
+        # 読み込むフレーム番号の設定
+        list_frame_number = [
+            i_frame + i
+            for i in range(-int(self.N_BUFFER / 2), int(self.N_BUFFER / 2) + 1)
         ]
 
-        cap = cv2.VideoCapture(self.import_path)
+        cap = cv2.VideoCapture(self.IMPORT_PATH)
 
-        frames = []
-        for i in get_idx:
+        images = []
+        for i in range(len(list_frame_number)):
             # 指定したフレーム番号へシーク（ジャンプ）
-            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
-            ret, frame = cap.read()
+            cap.set(cv2.CAP_PROP_POS_FRAMES, list_frame_number[i])
+            ret, image = cap.read()
 
             if not ret:
                 # 万が一読み込めなかった場合の安全対策（真っ黒の画像を返すなど）
                 print("画像が読み込めてません")
-                frame = np.zeros((self.img_height, self.img_width), dtype=np.uint8)
+                image = np.zeros((self.HEIGHT, self.WIDTH), dtype=np.uint8)
             else:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            frames.append(frame)
+            images.append(image)
 
         cap.release()
 
-        # numpy配列をPyTorchテンソルに変換: (5, H, W) -> (5, 1, H, W)
-        img_tensor = torch.from_numpy(np.array(frames)).float().unsqueeze(1)
+        # numpy配列をPyTorchテンソルに変換: (buffer, H, W) -> (buffer, 1, H, W)
+        images = torch.from_numpy(np.array(images)).float().unsqueeze(1)
 
-        return img_tensor
+        return list_frame_number, images

@@ -1,5 +1,5 @@
 #! /bin/bash
-work_dir="/home/masuda/01_github/10_Rcc_PIV"
+work_dir="/home/masuda/01_github/10_Rcc_PIV/new_version/"
 # params_file="${work_dir}/parameters/default.yaml"
 params_file="${work_dir}/parameters/optimized_params.yaml"
 # python ${work_dir}/opt_params.py --params-file $params_file 
