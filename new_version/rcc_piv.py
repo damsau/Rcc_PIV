@@ -105,7 +105,7 @@ def check_velocity(x_mesh, y_mesh, velocity):
     ax.set_ylim(np.min(y_mesh) - 50, np.max(y_mesh) + 50)
 
     # 間引き間隔
-    s = slice(None, None, 1)
+    s = slice(None, None, 2)
 
     velocity_abs = np.sqrt(velocity[:, :, 0] ** 2 + velocity[:, :, 1] ** 2)
     velocity_abs[velocity_abs == 0] = 1.0
@@ -139,6 +139,53 @@ def check_velocity(x_mesh, y_mesh, velocity):
     fig.tight_layout()
 
     plt.show()
+    plt.close(fig)
+
+
+def check_streamline(x_mesh, y_mesh, velocity):
+    """
+    流線を確認する関数
+    """
+
+    plt.style.use("PIV_results")
+
+    x_mesh = x_mesh.detach().cpu().numpy()
+    y_mesh = y_mesh.detach().cpu().numpy()
+    velocity = velocity.detach().cpu().numpy()
+
+    velocity_abs = np.sqrt(velocity[:, :, 0] ** 2 + velocity[:, :, 1] ** 2)
+    velocity_abs[velocity_abs == 0] = 1.0
+    velocity_normalized_x = velocity[:, :, 1] / velocity_abs
+    velocity_normalized_y = velocity[:, :, 0] / velocity_abs
+
+    fig, ax = plt.subplots(figsize=(4, 3), dpi=500)
+
+    strm = ax.streamplot(
+        x_mesh,
+        y_mesh,
+        velocity_normalized_x,
+        velocity_normalized_y,
+        color=velocity_abs,
+        linewidth=2 * velocity_abs / velocity_abs.max(),
+        cmap=tools.CMAP_THERMAL,
+        density=1.5,
+        arrowsize=0.5,
+    )
+
+    ax.set_title("Flow Structure (streamplot)")
+    ax.set_xlabel(r"$x$")
+    ax.set_ylabel(r"$y$")
+    ax.set_aspect("equal")
+
+    # カラーバーの設定
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1)
+    cbar = fig.colorbar(strm.lines, cax=cax, extend="max")
+    cbar.set_label("velocity Mag.")
+
+    fig.tight_layout()
+    plt.show()
+    plt.close(fig)
 
 
 # デバイス設定
@@ -176,7 +223,8 @@ def rcc_piv(params, mode="analysis"):
     )
     print(f"> フレームレート: {ParticleImages.FRAMERATE} [fps]")
     print(f"> フレーム数: {ParticleImages.N_FRAME}")
-    delta_t = 1 / ParticleImages.FRAMERATE
+    # delta_t = 1 / ParticleImages.FRAMERATE
+    delta_t = 1
 
     # \\\ 解析範囲の設定 \\\
     print("\n■ 解析範囲を設定します...")
@@ -306,11 +354,25 @@ def rcc_piv(params, mode="analysis"):
                 # 速度計算
                 pixel_velocity = pixel_displacement / delta_t
 
+                pixel_velocity_flipped = torch.flip(pixel_velocity, dims=[0])
+                pixel_velocity_flipped[:, :, 0] = -pixel_velocity_flipped[:, :, 0]
+                iw_position_center_gpu_flipped = torch.flip(
+                    iw_position_center_gpu, dims=[0]
+                )
+                iw_position_center_gpu_flipped[:, :, 0] = (
+                    ParticleImages.HEIGHT - iw_position_center_gpu_flipped[:, :, 0]
+                )
+
                 if FLAG_DEBUG:
                     check_velocity(
-                        iw_position_center_gpu[..., 1],
-                        iw_position_center_gpu[..., 0],
-                        pixel_velocity,
+                        iw_position_center_gpu_flipped[..., 1],
+                        iw_position_center_gpu_flipped[..., 0],
+                        pixel_velocity_flipped,
+                    )
+                    check_streamline(
+                        iw_position_center_gpu_flipped[..., 1],
+                        iw_position_center_gpu_flipped[..., 0],
+                        pixel_velocity_flipped,
                     )
 
                 # if FLAG_DEBUG:

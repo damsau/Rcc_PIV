@@ -1,23 +1,24 @@
 data_name: default
 rcc_piv:
-  img_name: "default_turbulence"   # 名前
+  # img_name: "default_turbulence"   # 名前
+  img_name: "default_turbulence_10rps"   # 名前
   # img_name: "uniform_flow"   # 名前
   # img_name: "uniform_shear"   # 名前
   img_ext: .avi
   pixel_to_mm: 0.0245901639344
   start: 1
-  end: 4
+  end: 3
   skip: 1
   n_buffer: 5 # 奇数
   n_rcc: 1
   iw_size:
-  - 32
+  - 24
   - 0
   - 0
   - 0
   - 0
   sw_size:
-  - 64
+  - 60
   - 0
   - 0
   - 0
