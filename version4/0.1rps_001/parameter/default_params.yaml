@@ -1,0 +1,43 @@
+data_name: default
+img_name: "default_turbulence_10rps"
+img_ext: .avi
+pixel_to_mm: 0.0260416666666  # 10mm / 384pixel
+framerate: 100
+start: 0
+end: 20
+skip: 1
+buffer: 2
+n_rcc: 5
+iw_size:
+- 80
+- 60
+- 40
+- 30
+- 20
+sw_size:
+- 100
+- 80
+- 60
+- 50
+- 40
+margin:
+- 32
+- 32
+- 32
+- 32
+- 32
+overlap:
+- 0.5
+- 0.5
+- 0.5
+- 0.5
+- 0.5
+mask_threshold: 0
+error_threshold:
+- 2
+- 2
+- 2
+- 2
+- 2
+
+
