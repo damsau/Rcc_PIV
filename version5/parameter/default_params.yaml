@@ -1,0 +1,41 @@
+pixel_to_mm: 0.0260416666666  # 10mm / 384pixel
+framerate: 100
+start: 0
+end: 50
+skip: 10
+buffer: 5
+n_rcc: 6
+iw_size:
+- 100
+- 80
+- 60
+- 40
+- 20
+- 10
+sw_size:
+- 160
+- 100
+- 80
+- 60
+- 40
+- 20
+margin:
+- 32
+- 32
+- 32
+- 32
+overlap:
+- 0
+- 0.5
+- 0.5
+- 0.5
+- 0.5
+- 0.5
+mask_threshold: 0
+error_threshold:
+- 2
+- 2
+- 2
+- 2
+
+
